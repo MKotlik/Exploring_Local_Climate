@@ -1,0 +1,10 @@
+chicago,data/chicago_precip.csv,data/chicago_temp.csv
+glasgow,data/glasgow_precip.csv,data/glasgow_temp.csv
+goodland,data/goodland_precip.csv,data/goodland_temp.csv
+honolulu,data/honolulu_precip.csv,data/honolulu_temp.csv
+houston,data/houston_precip.csv,data/houston_temp.csv
+juneau,data/juneau_precip.csv,data/juneau_temp.csv
+new_york,data/newyork_precip.csv,data/newyork_temp.csv
+san_francisco,data/sanfrancisco_precip.csv,data/sanfrancisco_temp.csv
+seattle,data/seattle_precip.csv,data/seattle_temp.csv
+wichita,data/wichita_precip.csv,data/wichita_temp.csv

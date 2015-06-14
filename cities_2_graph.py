@@ -12,9 +12,10 @@ cgitb.enable()
 
 # Toggle debug global to turn on/off debugging print statements
 # Set to False by default
-debug = False
+debug = True
 DEBUG2 = False
 DEBUG3 = False
+DEBUG_RATE_COMPARE = False
 
 # Global string containing HTML page body section. Only used if city query given. Used in main()
 HTML_BODY_1CITY = """\
@@ -53,6 +54,7 @@ HTML_BODY_2CITY = """\
 </div>
 """
 # div1 - city1 stats, div2 - city2 stats, div3 - comparison stats, div4 - precip_graph, div5 - temp_graph
+# %1 - city1_name, %2 - city1_stats, %3 - city2_stats, %4 - compare_stats, %5 - precip_compare_graph, %6 - temp_compare_graph
 
 
 def fs_to_dict():  # Converts mutant FieldStorage dictionary into regular dictionary
@@ -317,11 +319,11 @@ COMPARE_STAT_DIV = """\
 </p>
 """
 
-COMPARE_STAT_DIV_LINES = ['The average annual precipitation has been %sin greater in %s than in %s',
-                          '<br>The approximate rate of change per year has been %sin %s in %s than in %s'
-                          '<br>The approximate total change in annual precipitation has been %sin %s in %s than in %s'
-                          'The average annual mean temperature has been %sF greater %s than in %s'
-                          '<br>The approximate rate of change per year has been %sF %s in %s than in %s'
+COMPARE_STAT_DIV_LINES = ['The average annual precipitation has been %s inches greater in %s than in %s',
+                          '<br>The approximate rate of change per year has been %s inches %s in %s than in %s',
+                          '<br>The approximate total change in annual precipitation has been %s inches %s in %s than in %s',
+                          'The average annual mean temperature has been %sF greater %s than in %s',
+                          '<br>The approximate rate of change per year has been %sF %s in %s than in %s',
                           '<br>The approximate total change in annual mean temperature has been %sF %s in %s than in %s'
                           ]
 
@@ -370,16 +372,23 @@ def rate_change_comparison(stat_line, city1_stat, city2_stat, city1_name, city2_
             direction = 'greater'
         else:
             direction = 'less'
-        greater_city = city1_stat
-        lesser_city = city2_stat
+        greater_city = city1_name
+        lesser_city = city2_name
     else:
         difference = city2_stat - city1_stat
         if difference >= 0:
             direction = 'greater'
         else:
             direction = 'less'
-        greater_city = city2_stat
-        lesser_city = city1_stat
+        greater_city = city2_name
+        lesser_city = city1_name
+    if DEBUG_RATE_COMPARE:
+        print stat_line
+        print COMPARE_STAT_DIV_LINES[stat_line]
+        print difference
+        print direction
+        print greater_city
+        print lesser_city
     stat_sent = COMPARE_STAT_DIV_LINES[stat_line] % (difference, direction, greater_city, lesser_city)
     return stat_sent
 
@@ -388,21 +397,71 @@ def fill_compare_stat_div(city1, city2):
     city1_precip_average, city1_precip_rate, city1_precip_change, city1_temp_average, city1_temp_rate, city1_temp_change = return_stats(city1)
     city2_precip_average, city2_precip_rate, city2_precip_change, city2_temp_average, city2_temp_rate, city2_temp_change = return_stats(city2)
     average_precip_compare = average_comparison(0, city1_precip_average, city2_precip_average, city1.capitalize(), city2.capitalize())
-    rate_precip_compare = rate_change_comparison(1, city1_precip_rate, city2_precip_rate, city1.capitalize(), city2.capitalize)
+    rate_precip_compare = rate_change_comparison(1, city1_precip_rate, city2_precip_rate, city1.capitalize(), city2.capitalize())
     change_precip_compare = rate_change_comparison(2, city1_precip_change, city2_precip_change, city1.capitalize(), city2.capitalize())
     average_temp_compare = average_comparison(3, city1_temp_average, city2_temp_average, city1.capitalize(), city2.capitalize())
-    rate_temp_compare = rate_change_comparison(4, city1_temp_rate, city2_temp_rate, city1.capitalize(), city2.capitalize)
+    rate_temp_compare = rate_change_comparison(4, city1_temp_rate, city2_temp_rate, city1.capitalize(), city2.capitalize())
     change_temp_compare = rate_change_comparison(5, city1_temp_change, city2_temp_change, city1.capitalize(), city2.capitalize())
     compare_div = COMPARE_STAT_DIV % (average_precip_compare, rate_precip_compare, change_precip_compare, average_temp_compare, rate_temp_compare, change_temp_compare)
     return compare_div
 
 
+def combine_table_lists(list1, list2):
+    combined_list = []
+    shorter_len = min(len(list1), len(list2))
+    pos = 0
+    while pos < shorter_len:
+        row = [list1[pos][0], list1[pos][1], list2[pos][1]]
+        combined_list.append(row)
+        pos += 1
+    return combined_list
+
+
+def build_cond_compare_table(cond_list,
+                     cond_type, city1_name, city2_name):  # Builds HTML table, header included, for specific database and condition type
+    if cond_type == 'precip':  # Header changes depending on type
+        measure = 'Annual Total Precipitation (In)'
+        table_id = 'precip_table'
+        graph_id = '#precip_graph'
+    else:
+        measure = 'Annual Mean Temperature (F)'
+        table_id = 'temp_table'
+        graph_id = '#temp_graph'
+    table_header = """\
+    <table id="%s" class="highchart_table" data-graph-container="%s" data-graph-type="line" style="display:none">
+        <caption>%s</caption>
+        <thead>
+            <tr>
+                <th>Year</th>
+                <th>%s</th>
+                <th>%s</th>
+            </tr>
+        </thead>
+    """ % (table_id, graph_id, measure, city1_name, city2_name)  # Replaces %s in string with value of var measure
+    table_body = build_table_body(cond_list)
+    table = table_header + table_body + '\t</table>'
+    return table
+
+
+def build_comparison_table(city1, city2, cond_type):
+    city1_list = shorten_years_in_list(create_condition_list(get_condition_db(city1, cond_type)))
+    city2_list = shorten_years_in_list(create_condition_list(get_condition_db(city2, cond_type)))
+    combined_list = combine_table_lists(city1_list, city2_list)
+    city1_name = city1.capitalize()
+    city2_name = city2.capitalize()
+    compare_table = build_cond_compare_table(combined_list, cond_type, city1_name, city2_name)
+    return compare_table
+
 
 def compare_cities(city1, city2):
+    city1_name = city1.capitalize()
+    city2_name = city2.capitalize()
     city1_stats = display_stats(city1)
     city2_stats = display_stats(city2)
     compare_stats = fill_compare_stat_div(city1, city2)
-    return city1_stats
+    compare_precip_table = build_comparison_table(city1, city2, 'precip')
+    compare_temp_table = build_comparison_table(city1, city2, 'temp')
+    return HTML_BODY_2CITY % (city1_name, city1_stats, city2_name, city2_stats, compare_stats, compare_precip_table, compare_temp_table)
 
 
 def display_one_city(city):
@@ -435,8 +494,8 @@ def display_city_title(city1, city2):
 def main():  # Takes in query containing city name, and returns HTML page with tables for precipitation and temperature data for that city.
     city1, city2, page_body = retrieve_validate_2_cities()
     if debug:
-        city1 = 'Chicago'
-        city2 = 'Wichita'
+        city1 = 'chicago'
+        city2 = 'wichita'
         page_body = ''
     if DEBUG3:
         city1 = None
@@ -455,3 +514,7 @@ print main()
 # print retrieve_validate_2_cities()
 
 # print display_city_title(None, None)
+
+# print build_comparison_table('san_francisco', 'new_york', 'temp')
+
+#print fill_compare_stat_div('chicago', 'wichita')

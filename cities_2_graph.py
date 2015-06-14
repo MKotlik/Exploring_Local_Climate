@@ -17,7 +17,7 @@ DEBUG2 = False
 DEBUG3 = False
 
 # Global string containing HTML page body section. Only used if city query given. Used in main()
-HTML_BODY = """\
+HTML_BODY_1CITY = """\
 <div>
 %s
 </div>
@@ -29,6 +29,30 @@ HTML_BODY = """\
 </div>
 """
 # %s is replaced by table for each type of Data
+# div1 - city stats, div2- precip_graph, div3- temp_graph
+
+
+HTML_BODY_2CITY = """\
+<div>
+<h3>%s</h3>
+%s
+</div>
+<div>
+<h3>%s</h3>
+%s
+</div>
+<div>
+<h3>Comparison</h3>
+%s
+</div>
+<div>
+    %s
+</div>
+<div>
+    %s
+</div>
+"""
+# div1 - city1 stats, div2 - city2 stats, div3 - comparison stats, div4 - precip_graph, div5 - temp_graph
 
 
 def fs_to_dict():  # Converts mutant FieldStorage dictionary into regular dictionary
@@ -106,7 +130,8 @@ def build_table_body(cond_list):  # Builds HTML body section of table representi
     return table_body
 
 
-def build_cond_table(cond_list, cond_type):  # Builds HTML table, header included, for specific database and condition type
+def build_cond_table(cond_list,
+                     cond_type):  # Builds HTML table, header included, for specific database and condition type
     if cond_type == 'precip':  # Header changes depending on type
         measure = 'Annual Mean Precipitation (In)'
         table_id = 'precip_table'
@@ -151,6 +176,7 @@ def retrieve_validate_city():
         return city, page_body
     page_body = ''
     return city, page_body
+
 
 def retrieve_validate_2_cities():
     cgi_args = fs_to_dict()
@@ -259,6 +285,7 @@ def read_html(address):
         print 'HTML READ SUCCESS'
     return html_page
 
+
 STAT_DIV = """\
 <h3>Precipitation</h3>
 <p>
@@ -275,6 +302,30 @@ STAT_DIV = """\
 """
 
 
+COMPARE_STAT_DIV = """\
+<h3>Precipitation</h3>
+<p>
+    %s
+    %s
+    %s
+</p>
+<h3>Temperature</h3>
+<p>
+    %s
+    %s
+    %s
+</p>
+"""
+
+COMPARE_STAT_DIV_LINES = ['The average annual precipitation has been %sin greater in %s than in %s',
+                          '<br>The approximate rate of change per year has been %sin %s in %s than in %s'
+                          '<br>The approximate total change in annual precipitation has been %sin %s in %s than in %s'
+                          'The average annual mean temperature has been %sF greater %s than in %s'
+                          '<br>The approximate rate of change per year has been %sF %s in %s than in %s'
+                          '<br>The approximate total change in annual mean temperature has been %sF %s in %s than in %s'
+                          ]
+
+
 def display_stats(city):
     all_years = [1959, 2014]
     precip_list = create_condition_list(get_condition_db(city, 'precip'))
@@ -287,6 +338,88 @@ def display_stats(city):
     return mod_stat_div
 
 
+def return_stats(city):
+    all_years = [1959, 2014]
+    precip_list = create_condition_list(get_condition_db(city, 'precip'))
+    temp_list = create_condition_list(get_condition_db(city, 'temp'))
+    precip_average = timeperiod_average(precip_list, all_years)
+    temp_average = timeperiod_average(temp_list, all_years)
+    precip_rate, precip_change = rate_change_over_time(precip_list, all_years)
+    temp_rate, temp_change = rate_change_over_time(temp_list, all_years)
+    return precip_average, precip_rate, precip_change, temp_average, temp_rate, temp_change
+
+
+def average_comparison(stat_line, city1_stat, city2_stat, city1_name, city2_name):
+    difference = abs(city1_stat - city2_stat)
+    greater_average = max(city1_stat, city2_stat)
+    if city1_stat == greater_average:
+        greater_city = city1_name
+        lesser_city = city2_name
+    else:
+        greater_city = city2_name
+        lesser_city = city1_name
+    stat_sent = COMPARE_STAT_DIV_LINES[stat_line] % (difference, greater_city, lesser_city)
+    return stat_sent
+
+
+def rate_change_comparison(stat_line, city1_stat, city2_stat, city1_name, city2_name):
+    farther_stat = max(abs(city1_stat), abs(city2_stat))
+    if city1_stat == farther_stat:
+        difference = city1_stat - city2_stat
+        if difference >= 0:
+            direction = 'greater'
+        else:
+            direction = 'less'
+        greater_city = city1_stat
+        lesser_city = city2_stat
+    else:
+        difference = city2_stat - city1_stat
+        if difference >= 0:
+            direction = 'greater'
+        else:
+            direction = 'less'
+        greater_city = city2_stat
+        lesser_city = city1_stat
+    stat_sent = COMPARE_STAT_DIV_LINES[stat_line] % (difference, direction, greater_city, lesser_city)
+    return stat_sent
+
+
+def fill_compare_stat_div(city1, city2):
+    city1_precip_average, city1_precip_rate, city1_precip_change, city1_temp_average, city1_temp_rate, city1_temp_change = return_stats(city1)
+    city2_precip_average, city2_precip_rate, city2_precip_change, city2_temp_average, city2_temp_rate, city2_temp_change = return_stats(city2)
+    average_precip_compare = average_comparison(0, city1_precip_average, city2_precip_average, city1.capitalize(), city2.capitalize())
+    rate_precip_compare = rate_change_comparison(1, city1_precip_rate, city2_precip_rate, city1.capitalize(), city2.capitalize)
+    change_precip_compare = rate_change_comparison(2, city1_precip_change, city2_precip_change, city1.capitalize(), city2.capitalize())
+    average_temp_compare = average_comparison(3, city1_temp_average, city2_temp_average, city1.capitalize(), city2.capitalize())
+    rate_temp_compare = rate_change_comparison(4, city1_temp_rate, city2_temp_rate, city1.capitalize(), city2.capitalize)
+    change_temp_compare = rate_change_comparison(5, city1_temp_change, city2_temp_change, city1.capitalize(), city2.capitalize())
+    compare_div = COMPARE_STAT_DIV % (average_precip_compare, rate_precip_compare, change_precip_compare, average_temp_compare, rate_temp_compare, change_temp_compare)
+    return compare_div
+
+
+
+def compare_cities(city1, city2):
+    city1_stats = display_stats(city1)
+    city2_stats = display_stats(city2)
+    compare_stats = fill_compare_stat_div(city1, city2)
+    return city1_stats
+
+
+def display_one_city(city):
+    page_body = HTML_BODY_1CITY % (display_stats(city), build_precip_table(city), build_temp_table(city))
+    return page_body
+
+
+def display_page_body(city1, city2):
+    if city1 is not None and city2 is not None:
+        page_body = compare_cities(city1, city2)
+    elif city1 is not None:
+        page_body = display_one_city(city1)
+    else:
+        page_body = display_one_city(city2)
+    return page_body
+
+
 def display_city_title(city1, city2):
     if city1 is not None and city2 is None:
         title = '<h2>%s</h2>' % city1.capitalize()
@@ -297,17 +430,6 @@ def display_city_title(city1, city2):
     else:
         title = 'No cities chosen!'
     return title
-
-
-#HTML_BODY % (display_stats(city1), build_precip_table(city1), build_temp_table(city1))
-def display_page_body(city1, city2):
-    if city1 is not None and city2 is not None:
-        page_body = compare_cities(city1, city2)
-    elif city1 is not None:
-        page_body = display_one_city(city1)
-    else:
-        page_body = display_one_city(city2)
-    return page_body
 
 
 def main():  # Takes in query containing city name, and returns HTML page with tables for precipitation and temperature data for that city.
@@ -330,6 +452,6 @@ def main():  # Takes in query containing city name, and returns HTML page with t
 print main()
 
 
-#print retrieve_validate_2_cities()
+# print retrieve_validate_2_cities()
 
-#print display_city_title(None, None)
+# print display_city_title(None, None)

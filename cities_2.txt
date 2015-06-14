@@ -23,7 +23,7 @@
         </div>
         
         <div id="city_title">
-            <h2>Comparing %s and %s</h2>
+            %s
         </div>
     
         <div>

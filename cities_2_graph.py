@@ -14,7 +14,7 @@ cgitb.enable()
 # Set to False by default
 debug = False
 DEBUG2 = False
-
+DEBUG3 = False
 
 # Global string containing HTML page body section. Only used if city query given. Used in main()
 HTML_BODY = """\
@@ -152,6 +152,33 @@ def retrieve_validate_city():
     page_body = ''
     return city, page_body
 
+def retrieve_validate_2_cities():
+    cgi_args = fs_to_dict()
+    if DEBUG2:
+        cgi_args = {'city1': 'Chicago', 'city2': 'wichita'}
+    if 'city1' not in cgi_args and 'city2' not in cgi_args:
+        city1 = None
+        city2 = None
+        page_body = 'Please select a city!'
+        return city1, city2, page_body
+    if 'city1' in cgi_args:
+        city1 = cgi_args['city1'].lower()
+    else:
+        city1 = None
+    if 'city2' in cgi_args:
+        city2 = cgi_args['city2'].lower()
+    else:
+        city2 = None
+    cities_list = list_cities()
+    if (city1 is not None and [city1] not in cities_list) or (city2 is not None and [city2] not in cities_list):
+        page_body = """\
+        One or more of the cities you have requested do not currently have information available.
+        <br>Please enter valid cities or <a href="index.html/#contact">request</a> that a city be added to the website.
+        """
+        return city1, city2, page_body
+    page_body = ''
+    return city1, city2, page_body
+
 
 def build_precip_table(city):
     precip_list = shorten_years_in_list(create_condition_list(get_condition_db(city, 'precip')))
@@ -260,16 +287,49 @@ def display_stats(city):
     return mod_stat_div
 
 
+def display_city_title(city1, city2):
+    if city1 is not None and city2 is None:
+        title = '<h2>%s</h2>' % city1.capitalize()
+    elif city1 is None and city2 is not None:
+        title = '<h2>%s</h2>' % city2.capitalize()
+    elif city1 is not None and city2 is not None:
+        title = '<h2>Comparing %s and %s</h2>' % (city1.capitalize(), city2.capitalize())
+    else:
+        title = 'No cities chosen!'
+    return title
+
+
+#HTML_BODY % (display_stats(city1), build_precip_table(city1), build_temp_table(city1))
+def display_page_body(city1, city2):
+    if city1 is not None and city2 is not None:
+        page_body = compare_cities(city1, city2)
+    elif city1 is not None:
+        page_body = display_one_city(city1)
+    else:
+        page_body = display_one_city(city2)
+    return page_body
+
+
 def main():  # Takes in query containing city name, and returns HTML page with tables for precipitation and temperature data for that city.
-    city, page_body = retrieve_validate_city()
+    city1, city2, page_body = retrieve_validate_2_cities()
     if debug:
-        city = 'chicago'
+        city1 = 'Chicago'
+        city2 = 'Wichita'
         page_body = ''
-    html_main = read_html('city.txt')
-    if city != 'No city chosen!' and page_body == '':
-        page_body = HTML_BODY % (display_stats(city), build_precip_table(city), build_temp_table(city))
-    website = html_main % (city.capitalize(), page_body)
+    if DEBUG3:
+        city1 = None
+        city2 = None
+        page_body = 'Please select a city'
+    html_main = read_html('cities_2.txt')
+    if page_body == '':
+        page_body = display_page_body(city1, city2)
+    website = html_main % (display_city_title(city1, city2), page_body)
     return website
 
 
 print main()
+
+
+#print retrieve_validate_2_cities()
+
+#print display_city_title(None, None)

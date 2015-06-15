@@ -12,7 +12,7 @@ cgitb.enable()
 
 # Toggle debug global to turn on/off debugging print statements
 # Set to False by default
-debug = True
+debug = False
 DEBUG2 = False
 DEBUG3 = False
 DEBUG_RATE_COMPARE = False

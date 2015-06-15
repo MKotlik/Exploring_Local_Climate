@@ -150,7 +150,7 @@
                         </div>
                         <br>
 
-                        <form id="city_form" name="input" method="GET" action="cities_main.py">
+                        <form id="city_form" name="input" method="POST" action="cities_main.py">
                             <select name="city1" size="1">
                                 <option>Chicago</option>
                                 <option>Glasgow</option>
@@ -227,7 +227,7 @@
                     <div class="col-lg-8 col-lg-offset-2">
                         <!-- To configure the contact form email address, go to mail/contact_me.php and update the email address in the PHP file on line 19. -->
                         <!-- The form should work on most web servers, but if the form is not working you may need to configure your web server differently. -->
-                        <form method="GET" action="requestCity.py">
+                        <form method="POST" action="requestCity.py">
                             <div class="row control-group">
                                 <div class="form-group col-xs-12 floating-label-form-group controls">
                                     <label>City</label>

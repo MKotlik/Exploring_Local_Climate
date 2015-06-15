@@ -20,7 +20,7 @@ DEBUG_RATE_COMPARE = False
 # Global string containing HTML page body section. Only used if city query given. Used in main()
 HTML_BODY_1CITY = """\
         <div id="city1_info">
-            <div id="description>
+            <div id="description">
                 %s
              </div>
              <div id="city_image">
@@ -58,7 +58,7 @@ HTML_BODY_1CITY = """\
 HTML_BODY_2CITY = """\
         <div id="city1_info">
             <h3>%s</h3>
-            <div id="description>
+            <div id="description">
                 %s
              </div>
              <div id="city_image">
@@ -68,7 +68,7 @@ HTML_BODY_2CITY = """\
 
         <div id="city2_info">
             <h3>%s</h3>
-            <div id="description>
+            <div id="description">
                 %s
              </div>
              <div id="city_image">

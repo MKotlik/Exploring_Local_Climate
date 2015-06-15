@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="IntroCS2 Project - Exploring Climatic Trends">
+    <meta name="author" content="Mikhail Kotlik, Maddie Ostergaard">
+
+    <title>Exploring Climatic Trends</title>
+    <center>
+    <h1>Temporary Index</h1>
+    <h3>This is a stand-in index.html page until we can configure the themed version</h3>
+    <br>
+    <br>
+    </center>
+</head>
+
+<body><center>
+    <p>This is a test city.py form page.</p>
+    <h4>Choose a city from the map to view its data.</h4>
+    <br>
+    <img src="Map.jpg" alt="" usemap="#USMap" />
+	<map name="USMap" id="USMap">
+    <area alt="" title="Juneau, AK" href="cities_main.py?city=juneau" shape="rect" coords="177,36,199,78" />
+    <area alt="" title="Seattle, WA" href="cities_main.py?city=seattle" shape="rect" coords="249,133,266,178" />
+    <area alt="" title="San Francisco, CA" href="cities_main.py?city=san_francisco" shape="rect" coords="266,252,244,211" />
+    <area alt="" title="Honolulu, HI" href="cities_main.py?city=honolulu" shape="rect" coords="45,318,65,365" />
+    <area alt="" title="Houston, TX" href="cities_main.py?city=houston" shape="rect" coords="400,268,421,311" />
+    <area alt="" title="Wichita, KS" href="cities_main.py?city=wichita" shape="rect" coords="390,213,410,256" />
+    <area alt="" title="Goodland" href="cities_main.py?city=goodland" shape="rect" coords="364,199,383,240" />
+    <area alt="" title="Chicago" href="cities_main.py?city=chicago" shape="rect" coords="444,180,464,219" />
+    <area alt="" title="Glasgow" href="cities_main.py?city=glasgow" shape="rect" coords="453,223,474,260" />
+    <area alt="" title="New York" href="cities_main.py?city=new_york" shape="rect" coords="521,190,541,230" />
+    </map>
+    
+    <h4>Choose to view data for one city, or choose two cities to compare.</h4>
+    <form id="city_form" name="input" method="GET" action="cities_main.py">
+        <input type="text" name="city1" placeholder="Enter city">
+        <br>
+        <br><input type="text" name="city2" placeholder="Enter city">
+        <br>
+        <br><input type="submit" value="Select">
+    </form>
+    
+    <br>
+    <h4>This is a test requestCity.py form page.</h4>
+    <form id="requestCity" name="input" method="GET" action="requestCity.py">
+        <input type="text" name="city" placeholder="City">
+	<br>
+	<br>
+	<input type="text" name="state" placeholder="State">
+        <br>
+	<br>
+	<input type="submit" value="Submit Request">
+    </form>
+</center></body>
+
+</html>

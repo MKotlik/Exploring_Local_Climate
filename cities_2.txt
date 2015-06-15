@@ -13,8 +13,8 @@
     
     <body>
     
-        <div id="page_title>
-            <center> <h1>Exploring Climate Trends</h1> </center>
+        <div id="page_title">
+            <center> <h1><a style="text-decoration:none;" href="index.html">Exploring Climate Trends</a></h1> </center>
         </div>
         
         <div id="city_title">

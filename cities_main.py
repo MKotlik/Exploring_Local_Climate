@@ -12,49 +12,104 @@ cgitb.enable()
 
 # Toggle debug global to turn on/off debugging print statements
 # Set to False by default
-debug = False
+debug = True
 DEBUG2 = False
 DEBUG3 = False
 DEBUG_RATE_COMPARE = False
 
 # Global string containing HTML page body section. Only used if city query given. Used in main()
 HTML_BODY_1CITY = """\
-<div>
-%s
-</div>
-<div>
-    %s
-</div>
-<div>
-    %s
-</div>
+        <div id="city1_info">
+            <div id="description>
+                %s
+             </div>
+             <div id="city_image">
+                %s
+             </div>
+        </div>
+
+        <div>
+            <h3>Annual Total Precipitation</h3>
+            <div id="precip_graph">
+            </div>
+        </div>
+
+        <div>
+            <h3>Annual Average Temperature</h3>
+            <div id="temp_graph">
+            </div>
+        </div>
+
+        <div>
+            %s
+        </div>
+        <div>
+            %s
+        </div>
+        <div>
+            %s
+        </div>
 """
 # %s is replaced by table for each type of Data
-# div1 - city stats, div2- precip_graph, div3- temp_graph
+# div1 - description, div2 - image, div3 - city stats, div4- precip_graph, div5- temp_graph
+# %1 - city1_description, %2 - city1_image, %3 - city1_stats, %4 - city1_precip_table, %5 - city1_temp_table
 
 
 HTML_BODY_2CITY = """\
-<div>
-<h3>%s</h3>
-%s
-</div>
-<div>
-<h3>%s</h3>
-%s
-</div>
-<div>
-<h3>Comparison</h3>
-%s
-</div>
-<div>
-    %s
-</div>
-<div>
-    %s
-</div>
+        <div id="city1_info">
+            <h3>%s</h3>
+            <div id="description>
+                %s
+             </div>
+             <div id="city_image">
+                %s
+             </div>
+        </div>
+
+        <div id="city2_info">
+            <h3>%s</h3>
+            <div id="description>
+                %s
+             </div>
+             <div id="city_image">
+                %s
+             </div>
+        </div>
+
+        <div>
+            <h3>Annual Total Precipitation</h3>
+            <div id="precip_graph">
+            </div>
+        </div>
+
+        <div>
+            <h3>Annual Average Temperature</h3>
+            <div id="temp_graph">
+            </div>
+        </div>
+
+        <div>
+            <h3>%s</h3>
+            %s
+        </div>
+        <div>
+            <h3>%s</h3>
+            %s
+        </div>
+        <div>
+            <h3>Comparison</h3>
+            %s
+        </div>
+        <div>
+            %s
+        </div>
+        <div>
+            %s
+        </div>
 """
-# div1 - city1 stats, div2 - city2 stats, div3 - comparison stats, div4 - precip_graph, div5 - temp_graph
-# %1 - city1_name, %2 - city1_stats, %3 - city2_stats, %4 - compare_stats, %5 - precip_compare_graph, %6 - temp_compare_graph
+# %1 - city1_name, %2 - city1_description, %3 - city1_image, %4 - city2_name, %5 - city2_description, %6 - city2_image,
+# %7 - city1_name, %8 - city1_stats, %9 - city2_name, %10 - city2_stats, %11 - compare_stats, %12 - precip_compare_graph,
+# %13 - temp_compare_graph
 
 
 def fs_to_dict():  # Converts mutant FieldStorage dictionary into regular dictionary
@@ -296,13 +351,13 @@ def read_html(address):
 
 
 STAT_DIV = """\
-<h3>Precipitation</h3>
+<h4>Precipitation</h4>
 <p>
     Average Annual Total Precipitation Over Time Period: %s
     <br>Approximate Rate of Change per Year: %s
     <br>Approximate Change over Time: %s
 </p>
-<h3>Temperature</h3>
+<h4>Temperature</h4>
 <p>
     Average Annual Temperature Over Time Period: %s
     <br>Approximate Rate of Change per Year: %s
@@ -311,13 +366,13 @@ STAT_DIV = """\
 """
 
 COMPARE_STAT_DIV = """\
-<h3>Precipitation</h3>
+<h4>Precipitation</h4>
 <p>
     %s
     %s
     %s
 </p>
-<h3>Temperature</h3>
+<h4>Temperature</h4>
 <p>
     %s
     %s
@@ -472,22 +527,43 @@ def build_comparison_table(city1, city2, cond_type):
     return compare_table
 
 
+def get_city_description(city):
+    descriptions = file_readlines('data/cityDescription.csv')
+    mod_descriptions = []
+    for pair in descriptions:
+        row = [pair[0], ",".join(pair[1:])]
+        mod_descriptions.append(row)
+    for pair in mod_descriptions:
+        if pair[0] == city:
+            return pair[1]
+
+
+def get_city_image(city):
+    images = file_readlines('data/cityImages.csv')
+    for pair in images:
+        if pair[0] == city:
+            return pair[1]
+
+
 def compare_cities(city1, city2):
     city1_name = get_proper_name(city1)
     city2_name = get_proper_name(city2)
-    city1_stats = display_stats(city1)
-    city2_stats = display_stats(city2)
-    compare_stats = fill_compare_stat_div(city1, city2)
-    compare_precip_table = build_comparison_table(city1, city2, 'precip')
-    compare_temp_table = build_comparison_table(city1, city2, 'temp')
-    return HTML_BODY_2CITY % (
-        city1_name, city1_stats, city2_name, city2_stats, compare_stats, compare_precip_table, compare_temp_table)
-
+    page_body = HTML_BODY_2CITY % (
+        city1_name, get_city_description(city1), get_city_image(city1), city2_name,
+        get_city_description(city2), get_city_image(city2), city1_name, display_stats(city1), city2_name,
+        display_stats(city2), fill_compare_stat_div(city1, city2), build_comparison_table(city1, city2, 'precip'),
+        build_comparison_table(city1, city2, 'temp'))
+    return page_body
+# %1 - city1_name, %2 - city1_description, %3 - city1_image, %4 - city2_name, %5 - city2_description, %6 - city2_image,
+# %7 - city1_name, %8 - city1_stats, %9 - city2_name, %10 - city2_stats, %11 - compare_stats, %12 - precip_compare_graph,
+# %13 - temp_compare_graph
 
 def display_one_city(city):
-    page_body = HTML_BODY_1CITY % (display_stats(city), build_precip_table(city), build_temp_table(city))
+    page_body = HTML_BODY_1CITY % (
+        get_city_description(city), get_city_image(city, ), display_stats(city), build_precip_table(city),
+        build_temp_table(city))
     return page_body
-
+# %1 - city1_description, %2 - city1_image, %3 - city1_stats, %4 - city1_precip_table, %5 - city1_temp_table
 
 def display_page_body(city1, city2):
     if city1 is not None and city2 is not None:
@@ -530,11 +606,19 @@ def main():  # Takes in query containing city name, and returns HTML page with t
 
 print main()
 
-# Test Runs Below
-# print retrieve_validate_2_cities()
+    # Test Runs Below
+    # print retrieve_validate_2_cities()
 
-# print display_city_title(None, None)
+    # print display_city_title(None, None)
 
-# print build_comparison_table('san_francisco', 'new_york', 'temp')
+    # print build_comparison_table('san_francisco', 'new_york', 'temp')
 
-# print fill_compare_stat_div('chicago', 'wichita')
+    # print fill_compare_stat_div('chicago', 'wichita')
+
+    # print get_city_description('chicago')
+
+    # print get_city_image('new_york')
+
+    # print display_one_city('chicago')
+
+    # print compare_cities('chicago', 'wichita')

@@ -25,18 +25,6 @@
         <div id="city_title">
             %s
         </div>
-    
-        <div>
-            <h3>Annual Total Precipitation</h3>
-            <div id="precip_graph">
-            </div>
-        </div>
-        
-        <div>
-            <h3>Annual Average Temperature</h3>
-            <div id="temp_graph">
-            </div>
-        </div>
         
         <div id="page_body">
             %s

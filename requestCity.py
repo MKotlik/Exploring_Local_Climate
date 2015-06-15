@@ -29,8 +29,8 @@ def FStoDict(): #Converts mutant FieldStorage dictionary into regular d$
     return cleanDict
 
 def submit_to_requests():
-    #requestedDict = FStoDict()
-    requestedDict = {'city':"South Bend","state":"Indiana"}
+    requestedDict = FStoDict()
+    #requestedDict = {'city':"South Bend","state":"Indiana"}
     city = requestedDict['city']
     city = city.lower()
     state = requestedDict['state']

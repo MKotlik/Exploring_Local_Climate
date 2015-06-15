@@ -27,7 +27,7 @@
         </div>
     
         <div>
-            <h3>Annual Mean Percipitation</h3>
+            <h3>Annual Total Precipitation</h3>
             <div id="precip_graph">
             </div>
         </div>

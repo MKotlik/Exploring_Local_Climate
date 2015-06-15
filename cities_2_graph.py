@@ -100,8 +100,8 @@ def get_condition_db(city, cond_type):  # Returns file name of condition databas
                 return group[2]
 
 
-def create_condition_list(db_path):  # Returns condition data from database at DBpath as formatted list
-    csv_list = file_readlines(db_path)  # Gets condition database at address DBpath
+def create_condition_list(db_path):  # Returns condition data from database at db_path as formatted list
+    csv_list = file_readlines(db_path)  # Gets condition database at address db_path
     cond_list = []
     for line in csv_list[4:]:
         year = line[0][:4]
@@ -159,6 +159,13 @@ def build_cond_table(cond_list,
 def list_cities():
     cities_list = file_readlines('data/cities.csv')
     return cities_list
+
+
+def get_proper_name(city):
+    names_list = file_readlines('data/city_names.csv')
+    for pair in names_list:
+        if pair[0] == city.lower():
+            return pair[1]
 
 
 def retrieve_validate_city():
@@ -303,7 +310,6 @@ STAT_DIV = """\
 </p>
 """
 
-
 COMPARE_STAT_DIV = """\
 <h3>Precipitation</h3>
 <p>
@@ -394,15 +400,27 @@ def rate_change_comparison(stat_line, city1_stat, city2_stat, city1_name, city2_
 
 
 def fill_compare_stat_div(city1, city2):
-    city1_precip_average, city1_precip_rate, city1_precip_change, city1_temp_average, city1_temp_rate, city1_temp_change = return_stats(city1)
-    city2_precip_average, city2_precip_rate, city2_precip_change, city2_temp_average, city2_temp_rate, city2_temp_change = return_stats(city2)
-    average_precip_compare = average_comparison(0, city1_precip_average, city2_precip_average, city1.capitalize(), city2.capitalize())
-    rate_precip_compare = rate_change_comparison(1, city1_precip_rate, city2_precip_rate, city1.capitalize(), city2.capitalize())
-    change_precip_compare = rate_change_comparison(2, city1_precip_change, city2_precip_change, city1.capitalize(), city2.capitalize())
-    average_temp_compare = average_comparison(3, city1_temp_average, city2_temp_average, city1.capitalize(), city2.capitalize())
-    rate_temp_compare = rate_change_comparison(4, city1_temp_rate, city2_temp_rate, city1.capitalize(), city2.capitalize())
-    change_temp_compare = rate_change_comparison(5, city1_temp_change, city2_temp_change, city1.capitalize(), city2.capitalize())
-    compare_div = COMPARE_STAT_DIV % (average_precip_compare, rate_precip_compare, change_precip_compare, average_temp_compare, rate_temp_compare, change_temp_compare)
+    city1_precip_average, city1_precip_rate, city1_precip_change, city1_temp_average, city1_temp_rate, city1_temp_change = return_stats(
+        city1)
+    city2_precip_average, city2_precip_rate, city2_precip_change, city2_temp_average, city2_temp_rate, city2_temp_change = return_stats(
+        city2)
+    city1_proper = get_proper_name(city1)
+    city2_proper = get_proper_name(city2)
+    average_precip_compare = average_comparison(0, city1_precip_average, city2_precip_average, city1_proper,
+                                                city2_proper)
+    rate_precip_compare = rate_change_comparison(1, city1_precip_rate, city2_precip_rate, city1_proper,
+                                                 city2_proper)
+    change_precip_compare = rate_change_comparison(2, city1_precip_change, city2_precip_change, city1_proper,
+                                                   city2_proper)
+    average_temp_compare = average_comparison(3, city1_temp_average, city2_temp_average, city1_proper,
+                                              city2_proper)
+    rate_temp_compare = rate_change_comparison(4, city1_temp_rate, city2_temp_rate, city1_proper,
+                                               city2_proper)
+    change_temp_compare = rate_change_comparison(5, city1_temp_change, city2_temp_change, city1_proper,
+                                                 city2_proper)
+    compare_div = COMPARE_STAT_DIV % (
+        average_precip_compare, rate_precip_compare, change_precip_compare, average_temp_compare, rate_temp_compare,
+        change_temp_compare)
     return compare_div
 
 
@@ -418,7 +436,8 @@ def combine_table_lists(list1, list2):
 
 
 def build_cond_compare_table(cond_list,
-                     cond_type, city1_name, city2_name):  # Builds HTML table, header included, for specific database and condition type
+                             cond_type, city1_name,
+                             city2_name):  # Builds HTML table, header included, for specific database and condition type
     if cond_type == 'precip':  # Header changes depending on type
         measure = 'Annual Total Precipitation (In)'
         table_id = 'precip_table'
@@ -447,21 +466,22 @@ def build_comparison_table(city1, city2, cond_type):
     city1_list = shorten_years_in_list(create_condition_list(get_condition_db(city1, cond_type)))
     city2_list = shorten_years_in_list(create_condition_list(get_condition_db(city2, cond_type)))
     combined_list = combine_table_lists(city1_list, city2_list)
-    city1_name = city1.capitalize()
-    city2_name = city2.capitalize()
+    city1_name = get_proper_name(city1)
+    city2_name = get_proper_name(city2)
     compare_table = build_cond_compare_table(combined_list, cond_type, city1_name, city2_name)
     return compare_table
 
 
 def compare_cities(city1, city2):
-    city1_name = city1.capitalize()
-    city2_name = city2.capitalize()
+    city1_name = get_proper_name(city1)
+    city2_name = get_proper_name(city2)
     city1_stats = display_stats(city1)
     city2_stats = display_stats(city2)
     compare_stats = fill_compare_stat_div(city1, city2)
     compare_precip_table = build_comparison_table(city1, city2, 'precip')
     compare_temp_table = build_comparison_table(city1, city2, 'temp')
-    return HTML_BODY_2CITY % (city1_name, city1_stats, city2_name, city2_stats, compare_stats, compare_precip_table, compare_temp_table)
+    return HTML_BODY_2CITY % (
+        city1_name, city1_stats, city2_name, city2_stats, compare_stats, compare_precip_table, compare_temp_table)
 
 
 def display_one_city(city):
@@ -481,11 +501,11 @@ def display_page_body(city1, city2):
 
 def display_city_title(city1, city2):
     if city1 is not None and city2 is None:
-        title = '<h2>%s</h2>' % city1.capitalize()
+        title = '<h2>%s</h2>' % get_proper_name(city1)
     elif city1 is None and city2 is not None:
-        title = '<h2>%s</h2>' % city2.capitalize()
+        title = '<h2>%s</h2>' % get_proper_name(city2)
     elif city1 is not None and city2 is not None:
-        title = '<h2>Comparing %s and %s</h2>' % (city1.capitalize(), city2.capitalize())
+        title = '<h2>Comparing %s and %s</h2>' % (get_proper_name(city1), get_proper_name(city2))
     else:
         title = 'No cities chosen!'
     return title
@@ -510,11 +530,11 @@ def main():  # Takes in query containing city name, and returns HTML page with t
 
 print main()
 
-
+# Test Runs Below
 # print retrieve_validate_2_cities()
 
 # print display_city_title(None, None)
 
 # print build_comparison_table('san_francisco', 'new_york', 'temp')
 
-#print fill_compare_stat_div('chicago', 'wichita')
+# print fill_compare_stat_div('chicago', 'wichita')

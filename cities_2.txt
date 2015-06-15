@@ -4,7 +4,7 @@
     
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-        <title>Test City Graph</title>
+        <title>City Data - Exploring Climate Trends</title>
         
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript"></script>
         <script src="js/highcharts.js" type="text/javascript"></script>
@@ -12,14 +12,9 @@
     </head>
     
     <body>
-        
-        <div id="description">
-            <p>This is a test page for the city.py script.
-            <br>As of now, it can only work properly through a manual query.
-            <br>It can display extract and display the condition data on a chosen city
-            <br>as a pair of tables. In the future, the script will be modified
-            <br>to become beautiful, and to display the data as graphs.
-            </p>
+    
+        <div id="page_title>
+            <center> <h1>Exploring Climate Trends</h1> </center>
         </div>
         
         <div id="city_title">

@@ -7,7 +7,7 @@ print ""
 
 import cgi
 import cgitb
-cgitb.enable()
+#cgitb.enable()
 
 debug = False
 
